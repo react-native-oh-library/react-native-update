@@ -1,100 +1,76 @@
 {
-  "name": "react-native-update",
+  "name": "@oh-rn/react-native-update",
+  "displayName": "@oh-rn/react-native-update",
   "version": "10.56.1",
   "description": "react-native hot update",
-  "main": "src/index",
-  "types": "src/index.ts",
-  "files": [
-    "src",
-    "!src/__tests__",
-    "android/src",
-    "!android/src/test",
-    "android/lib",
-    "android/jni",
-    "!android/jni/HDiffPatch/test",
-    "android/build.gradle",
-    "android/proguard.pro",
-    "ios",
-    "cpp/patch_core",
-    "cpp/update_flow_core",
-    "!cpp/**/tests",
-    "harmony/pushy.har",
-    "harmony/hvigor-plugin.ts",
-    "harmony/pushy/src",
-    "!harmony/pushy/src/test",
-    "react-native-update.podspec",
-    "react-native.config.js",
-    "expo-module.config.json",
-    "README.md",
-    "README-CN.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "prepublishOnly": "NODE_ENV=production bun scripts/prepublish.ts",
-    "publish:local": "SKIP_NATIVE_BUILD=1 npm publish",
-    "prepack": "bun submodule && bun lint",
-    "lint": "biome check src && tsc --noEmit && node scripts/check-harmony-types.js && node scripts/check-native-spec-parity.js",
-    "lint:harmony": "node scripts/check-harmony-types.js",
-    "submodule": "git submodule update --init --recursive",
-    "test": "bun test src/__tests__",
-    "test:patch-core": "./scripts/test-patch-core.sh",
-    "test:flow-core": "./scripts/test-update-flow-core.sh",
-    "generate:flow-vectors": "bun scripts/generate-flow-vectors.ts",
-    "build:harmony-har": "node scripts/build-harmony-har.js",
-    "build:harmony-e2e": "bash Example/e2etest/scripts/build-harmony-e2e.sh",
-    "build:so": "bun submodule && bash scripts/build-android-so.sh",
-    "build:ios-debug": "cd Example/e2etest && bun && bunx detox build --configuration ios.sim.debug",
-    "build:ios-release": "cd Example/e2etest && bun && bunx detox build --configuration ios.sim.release",
-    "test:ios-debug": "cd Example/e2etest && E2E_PLATFORM=ios bunx detox test --configuration ios.sim.debug",
-    "test:ios-release": "cd Example/e2etest && E2E_PLATFORM=ios bunx detox test --configuration ios.sim.release",
-    "build:android-debug": "cd Example/e2etest && bun && bunx detox build --configuration android.emu.debug",
-    "build:android-release": "cd Example/e2etest && bun && bunx detox build --configuration android.emu.release",
-    "test:android-release": "cd Example/e2etest && E2E_PLATFORM=android bunx detox test --configuration android.emu.release --headless --record-logs all",
-    "test:android-debug": "cd Example/e2etest && E2E_PLATFORM=android bunx detox test --configuration android.emu.debug --headless --record-logs all",
-    "smoke:android-debug": "cd Example/e2etest && bunx detox test --configuration android.emu.debug --config e2e/smoke/jest.config.js",
-    "e2e:ios": "bun build:ios-release && bun test:ios-release",
-    "e2e:android": "bun build:android-release && bun test:android-release"
-  },
+  "main": "./dist/commonjs/index.js",
+  "module": "./dist/module/index.js",
+  "react-native": "./src/index.ts",
+  "source": "./src/index.ts",
+  "types": "./dist/typescript/index.d.ts",
+  "license": "MIT",
+  "private": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/reactnativecn/react-native-update.git"
   },
   "keywords": [
     "react-native",
-    "ios",
-    "android",
-    "update"
+    "harmony",
+    "harmonyos"
   ],
-  "author": "reactnativecn",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/reactnativecn/react-native-update/issues"
+  "homepage": "https://github.com/reactnativecn/react-native-update#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE",
+    "harmony/"
+  ],
+  "scripts": {
+    "prepare": "tsc --noEmit && bob build",
+    "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name update --cpp-output-path ./harmony/update/src/main/cpp/generated --ets-output-path ./harmony/update/src/main/ets/generated --turbo-modules-spec-paths ./src/specs/v1/NativePushy.ts"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-native": ">=0.59.0"
-  },
-  "homepage": "https://github.com/reactnativecn/react-native-update#readme",
-  "dependencies": {
-    "nanoid": "^3.3.3"
-  },
-  "codegenConfig": {
-    "name": "RCTPushySpec",
-    "type": "modules",
-    "jsSrcsDir": "src"
+    "react-native": ">=0.72",
+    "react": ">=16.8.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.8",
-    "@biomejs/biome": "^2.5.5",
-    "@react-native/babel-preset": "^0.73.21",
-    "@react-native/typescript-config": "0.84.1",
-    "@types/bun": "^1.3.11",
-    "@types/node": "^25.5.0",
-    "@types/react": "^19.2.14",
-    "@types/react-test-renderer": "18.0.7",
+    "typescript": "5.0.4",
+    "@react-native/typescript-config": "0.79.5",
     "react": "18.2.0",
-    "react-native": "0.73",
-    "react-test-renderer": "18.2.0",
-    "typescript": "^7.0.2"
+    "@types/react": "18.2.79",
+    "react-native": "0.72.5",
+    "jest": "^29.6.3",
+    "react-native-builder-bob": "^0.18.0",
+    "@react-native-oh/react-native-harmony-cli": "^0.77.50",
+    "metro": "^0.81.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "harmony": {
+    "alias": "react-native-update",
+    "autolinking": {
+      "cmakeLibraryTargetName": "update",
+      "ohPackageName": "@oh-rn/react-native-update",
+      "etsPackageClassName": "UpdatePackage",
+      "cppPackageClassName": "UpdatePackage"
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "dist",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  },
+  "dependencies": {
+    "nanoid": "^3.3.3"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "license": "Apache-2.0",
+  "devDependencies": {
+
+  },
+  "author": "",
+  "name": "@oh-rn/react-native-update",
+  "description": "Please describe the basic information.",
+  "main": "index.ets",
+  "version": "10.56.1",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "file:../react_native_openharmony_release.har"
+  }
+}

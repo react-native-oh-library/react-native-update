@@ -1,82 +1,27 @@
-.vscode
-android/build
-android/obj
-android/.cxx
-*.iml
-
 # OSX
-#
 .DS_Store
 
-# Xcode
-#
-build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-project.xcworkspace
-
-# Android/IJ
-#
-.idea
-.gradle
-local.properties
-**/.project
-**/.settings
-**/.classpath
-
 # node.js
-#
 node_modules/
 npm-debug.log
-
-Example/**/.update
-Example/**/.pushy
-Example/**/.e2e-artifacts
-Example/**/artifacts
-Example/**/.detox
-Example/**/coverage
-Example/testHotUpdate/artifacts
-.e2e-rn077-oldarch
-
 yarn-error.log
-Example/testHotUpdate/.yarn
-android/bin
-Example/testHotUpdate/harmony
-Example/testHotUpdate/android/app/.cxx
-Example/harmony_use_pushy/libs
-**/mcp.json
 
+# Build output
+/dist
 
-harmony/package
-harmony/pushy.har
-**/oh_modules
-harmony/pushy/.preview
-harmony/pushy/.cxx
-harmony/.tsconfig.harmony.json
-Example/harmony_use_pushy/harmony/entry/src/main/resources/rawfile/meta.json
-**/.hvigor
-Example/harmony_use_pushy/harmony/entry/src/main/cpp/generated
-Example/testHotUpdate/.e2e-artifacts
-harmony/pushy/src/main/cpp/android-generated
-**/ios/.xcode.env.local
-.bun-cache
-.ohpm-cache
+# npm pack output
 *.tgz
-package
 
+# IDE
+.idea/
+.vscode/
 
-# Build outputs of scripts/test-patch-core.sh and scripts/test-update-flow-core.sh
-.tmp/
+# HarmonyOS
+harmony/library/.cxx/
+harmony/library/build/
+harmony/library/.hvigor/
+
+# rn.py build hap fingerprints / local build metadata
+.rn-build/
+
+package-lock.json
