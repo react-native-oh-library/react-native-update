@@ -32,7 +32,9 @@
   ],
   "scripts": {
     "prepare": "tsc --noEmit && bob build",
-    "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name update --cpp-output-path ./harmony/update/src/main/cpp/generated --ets-output-path ./harmony/update/src/main/ets/generated --turbo-modules-spec-paths ./src/specs/v1/NativePushy.ts"
+    "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name update --cpp-output-path ./harmony/update/src/main/cpp/generated --ets-output-path ./harmony/update/src/main/ets/generated --turbo-modules-spec-paths ./src/specs/v1/NativePushy.ts",
+    "test": "jest --config ./jest/jestconfig.js --no-coverage --watchman=false",
+    "test:coverage": "jest --config ./jest/jestconfig.js --coverage --watchman=false"
   },
   "peerDependencies": {
     "react-native": ">=0.72",
@@ -44,6 +46,13 @@
     "react": "18.2.0",
     "@types/react": "18.2.79",
     "react-native": "0.72.5",
+    "@babel/core": "^7.20.0",
+    "@babel/plugin-transform-react-jsx": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/preset-flow": "^7.20.0",
+    "@babel/preset-typescript": "^7.20.0",
+    "@types/jest": "^29.5.12",
+    "babel-jest": "^29.6.3",
     "jest": "^29.6.3",
     "react-native-builder-bob": "^0.18.0",
     "@react-native-oh/react-native-harmony-cli": "^0.77.50",
