@@ -1,0 +1,10 @@
+{
+  "name": "@oh-rn/react-native-update-jest",
+  "private": true,
+  "version": "1.0.0",
+  "description": "RNOH JS white-box tests for @oh-rn/react-native-update",
+  "scripts": {
+    "test": "jest --config ./jestconfig.js --no-coverage --watchman=false",
+    "test:coverage": "jest --config ./jestconfig.js --coverage --watchman=false"
+  }
+}
