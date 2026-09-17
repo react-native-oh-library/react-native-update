@@ -17,7 +17,7 @@ const isWebPlatform = Platform.OS === 'web';
 export const PushyModule = isWebPlatform
   ? emptyModule
   : isTurboModuleEnabled
-    ? require('./NativePushy').default
+    ? require('./specs/v1/NativePushy').default
     : NativeModules.Pushy;
 
 export const UpdateModule = PushyModule;
