@@ -1,13 +1,7 @@
-import { appTasks } from '@ohos/hvigor-ohos-plugin';
-import { createRNOHModulePlugin } from "@rnoh/hvigor-plugin"
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd. All rights reserved
+ * Use of this source code is governed by a MIT license that can be
+ * found in the LICENSE file.
+ */
 
-export default {
-  system: appTasks, /* Built-in plugin of Hvigor. It cannot be modified. */
-  plugins: [
-    createRNOHModulePlugin({
-      nodeModulesPath: "../node_modules",
-      codegen: null,
-      autolinking: {}
-    }),
-  ]       /* Custom plugin to extend the functionality of Hvigor. */
-}
+export { appTasks } from '@ohos/hvigor-ohos-plugin';

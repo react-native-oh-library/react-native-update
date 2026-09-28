@@ -10,7 +10,7 @@ const {
 const RNVersion = `${v.major}.${v.minor}.${v.patch}`;
 const isTurboModuleEnabled =
   // https://github.com/facebook/react-native/pull/48362
-  (global as any).__turboModuleProxy || (global as any).RN$Bridgeless;
+  (globalThis as any).__turboModuleProxy || (globalThis as any).RN$Bridgeless;
 
 const isWebPlatform = Platform.OS === 'web';
 

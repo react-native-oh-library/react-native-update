@@ -4,7 +4,6 @@
  * found in the LICENSE file.
  */
 
-module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [],
-};
+import React from 'react';
+
+export const AppParamsContext = React.createContext(undefined);

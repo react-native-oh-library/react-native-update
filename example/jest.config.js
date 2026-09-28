@@ -4,7 +4,8 @@
  * found in the LICENSE file.
  */
 
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [],
+  preset: 'ts-jest',
+  testEnvironment: 'node',
 };
