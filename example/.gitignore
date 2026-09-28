@@ -56,8 +56,11 @@ yarn-error.log
 *.jsbundle
 
 # HarmonyOS bundle
+bundle.harmony.js
+*.hbc
 harmony/entry/src/main/resources/rawfile/bundle.harmony.js
 harmony/entry/src/main/resources/rawfile/hermes_bundle.hbc
+BuildProfile.ets
 
 # Ruby / CocoaPods
 /ios/Pods/

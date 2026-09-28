@@ -5,6 +5,9 @@
  */
 
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [],
+  arrowParens: 'avoid',
+  bracketSameLine: true,
+  bracketSpacing: true,
+  singleQuote: true,
+  trailingComma: 'all',
 };

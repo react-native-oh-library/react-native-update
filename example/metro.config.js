@@ -1,6 +1,7 @@
-/**
- * This source code is licensed under the MIT license found in the
- * LICENSE-MIT file in the root directory of this source tree.
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd. All rights reserved
+ * Use of this source code is governed by a MIT license that can be
+ * found in the LICENSE file.
  */
 
 const {mergeConfig, getDefaultConfig} = require('@react-native/metro-config');
@@ -20,6 +21,10 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), createHarmonyMetroConfig({
-  reactNativeHarmonyPackageName: '@react-native-oh/react-native-harmony',
-}), config);
+module.exports = mergeConfig(
+  getDefaultConfig(__dirname),
+  createHarmonyMetroConfig({
+    reactNativeHarmonyPackageName: '@react-native-oh/react-native-harmony',
+  }),
+  config,
+);

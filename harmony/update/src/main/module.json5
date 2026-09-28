@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "update",
+    "name": "rnoh_update",
     "type": "har",
     "deviceTypes": [
       "default",

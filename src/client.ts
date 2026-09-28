@@ -734,11 +734,13 @@ export class Pushy {
       let timer: ReturnType<typeof setTimeout> | undefined;
       await Promise.race([
         this.loggerPromise.promise,
-        new Promise((resolve) => {
-          timer = setTimeout(resolve, 10 * 1000);
+        new Promise<void>((resolve) => {
+          timer = setTimeout(() => resolve(), 10 * 1000);
         }),
       ]);
-      clearTimeout(timer);
+      if (timer !== undefined) {
+        clearTimeout(timer);
+      }
     }
     const { logger = noop, appKey } = this.options;
     const overridePackageVersion = this.options.overridePackageVersion;
@@ -891,7 +893,7 @@ export class Pushy {
     if (!afterCheckUpdate) {
       return;
     }
-    // 这里仅做状态通知，不阻塞原有检查流程
+    // ??????????????????
     Promise.resolve(afterCheckUpdate(state)).catch((error: any) => {
       log('afterCheckUpdate failed:', error?.message || error);
     });
@@ -1100,8 +1102,8 @@ export class Pushy {
     }
     sharedState.marked = true;
     this.report({ type: 'markSuccess' });
-    // 救砖回执:这个版本是被救援通道送进来的,且活过了健康确认——遥测里
-    // 一条 rescue 回执就是"这台设备被捞回来了"的证据。
+    // ????:??????????????,????????——???
+    // ?? rescue ????"?????????"????
     if (currentVersionInfo.forceBootRescue) {
       this.report({ type: 'forceBootRescue' });
     }
@@ -1208,10 +1210,10 @@ export class Pushy {
       this.notifyAfterCheckUpdate({ status: 'skipped' });
       return;
     }
-    // 内容寻址的二进制身份,服务端据此精确判定 pdiff 适用性(取代 buildTime
-    // 启发式)。同步读 core 里已预取的值:还没算完就省略字段(服务端回退
-    // buildTime 启发式),下一次检查自然带上——绝不为它 await、拖慢或复杂化
-    // 检查流程。
+    // ??????????,????????? pdiff ???(?? buildTime
+    // ???)???? core ??????:?????????(?????
+    // buildTime ???),?????????——???? await???????
+    // ?????
     const bundleHash = __DEV__ ? '' : getBundleHash();
     const fetchBody = buildCheckRequestBody({
       packageVersion: this.getEffectivePackageVersion(),
@@ -1296,8 +1298,8 @@ export class Pushy {
       log('checking result:', result);
 
       if (result?.bundleStatus === 'unknownBundle') {
-        // 服务端判定当前二进制内嵌 bundle 未注册,增量已被降级为全量。只面向
-        // 开发者(日志 + 遥测,控制台聚合是主渠道);终端用户无感知。
+        // ???????????? bundle ???,?????????????
+        // ???(?? + ??,?????????);????????
         warn(this.t('warn_unknown_bundle'));
         this.report({
           type: 'bundleMismatch',
@@ -1524,7 +1526,9 @@ export class Pushy {
             (0.75 + Math.random() * 0.5)
         );
         log(`retry attempt ${attempt}/${maxRetries}, waiting ${backoffMs}ms`);
-        await new Promise((r) => setTimeout(r, backoffMs));
+        await new Promise<void>((r) => {
+          setTimeout(() => r(), backoffMs);
+        });
         errorMessages.length = 0;
         errorMessages.push(...exhaustedStrategies.values());
         lastError = undefined;
@@ -1603,7 +1607,7 @@ export class Pushy {
     delete sharedState.progressCallbacks[hash];
     if (succeeded && errorMessages.length > 0) {
       // An earlier strategy failed and a later one rescued the download
-      // (e.g. pdiff copiesCrc mismatch on a rebuilt binary → full). Surface
+      // (e.g. pdiff copiesCrc mismatch on a rebuilt binary ? full). Surface
       // the degradation: it is invisible to the end user but tells the
       // platform that incremental delivery is failing for this binary.
       this.report({

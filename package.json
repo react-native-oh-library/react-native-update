@@ -1,6 +1,5 @@
 {
-  "name": "@oh-rn/react-native-update",
-  "displayName": "@oh-rn/react-native-update",
+  "name": "@react-native-ohos/react-native-update",
   "version": "10.56.1",
   "description": "react-native hot update",
   "main": "./dist/commonjs/index.js",
@@ -34,7 +33,8 @@
     "prepare": "tsc --noEmit && bob build",
     "codegen-lib": "react-native codegen-lib-harmony --no-safety-check --npm-package-name update --cpp-output-path ./harmony/update/src/main/cpp/generated --ets-output-path ./harmony/update/src/main/ets/generated --turbo-modules-spec-paths ./src/specs/v1/NativePushy.ts",
     "test": "jest --config ./jest/jestconfig.js --no-coverage --watchman=false",
-    "test:coverage": "jest --config ./jest/jestconfig.js --coverage --watchman=false"
+    "test:coverage": "jest --config ./jest/jestconfig.js --coverage --watchman=false",
+    "fast:pkg": "cd example && npm run fast:pkg"
   },
   "peerDependencies": {
     "react-native": ">=0.72",
@@ -64,8 +64,8 @@
   "harmony": {
     "alias": "react-native-update",
     "autolinking": {
-      "cmakeLibraryTargetName": "update",
-      "ohPackageName": "@oh-rn/react-native-update",
+      "cmakeLibraryTargetName": "rnoh_update",
+      "ohPackageName": "@react-native-ohos/react-native-update",
       "etsPackageClassName": "UpdatePackage",
       "cppPackageClassName": "UpdatePackage"
     }

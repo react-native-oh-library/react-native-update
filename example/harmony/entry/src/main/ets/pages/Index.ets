@@ -1,6 +1,7 @@
-/**
- * This source code is licensed under the MIT license found in the
- * LICENSE-MIT file in the root directory of this source tree.
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd. All rights reserved
+ * Use of this source code is governed by a MIT license that can be
+ * found in the LICENSE file.
  */
 
 import {
@@ -15,18 +16,17 @@ import {
   TraceJSBundleProviderDecorator,
   RNOHCoreContext
 } from '@rnoh/react-native-openharmony';
-import { PushyFileJSBundleProvider } from '@oh-rn/react-native-update';
+import { PushyFileJSBundleProvider } from '@react-native-ohos/react-native-update';
 import { createRNPackages } from '../RNPackagesFactory';
-// GEN:FABRIC_IMPORTS_BEGIN
-// GEN:FABRIC_IMPORTS_END
 
-// GEN:FABRIC_ARK_CONST_BEGIN
-// GEN:FABRIC_ARK_CONST_END
+const arkTsComponentNames: Array<string> = [
 
+];
 @Builder
 export function buildCustomRNComponent(ctx: ComponentBuilderContext) {
-// GEN:FABRIC_BUILDER_BODY_BEGIN
-// GEN:FABRIC_BUILDER_BODY_END
+  Stack(){
+  }
+  .position({x:0, y: 0})
 }
 
 const wrappedCustomRNComponentBuilder = wrapBuilder(buildCustomRNComponent)
@@ -40,16 +40,13 @@ struct Index {
 
   aboutToAppear() {
     this.logger = this.rnohCoreContext!.logger.clone("Index")
-    const stopTracing = this.logger.clone("aboutToAppear").startTracing();
+    const stopTracing = this.logger.clone("aboutToAppear").startTracing()
 
     this.shouldShow = true
-    stopTracing();
+    stopTracing()
   }
 
   onBackPress(): boolean | undefined {
-    // NOTE: this is required since `Ability`'s `onBackPressed` function always
-    // terminates or puts the app in the background, but we want Ark to ignore it completely
-    // when handled by RN
     this.rnohCoreContext!.dispatchBackPress()
     return true
   }
@@ -66,10 +63,10 @@ struct Index {
             enableNDKTextMeasuring: true,
             enableBackgroundExecutor: false,
             enableCAPIArchitecture: true,
-            arkTsComponentNames: []
+            arkTsComponentNames: arkTsComponentNames,
           },
           initialProps: { "foo": "bar" } as Record<string, string>,
-          appKey: "AwesomeProject",
+          appKey: "app_name",
           wrappedCustomRNComponentBuilder: wrappedCustomRNComponentBuilder,
           onSetUp: (rnInstance) => {
             rnInstance.enableFeatureFlag("ENABLE_RN_INSTANCE_CLEAN_UP")
@@ -77,11 +74,7 @@ struct Index {
           jsBundleProvider: new TraceJSBundleProviderDecorator(
             new AnyJSBundleProvider([
               new MetroJSBundleProvider(),
-              // 热更新 bundle：优先使用 pushy 已下载的版本，找不到时回退到内置资源
               new PushyFileJSBundleProvider(this.rnohCoreContext.uiAbilityContext),
-              // NOTE: to load the bundle from file, place it in
-              // `/data/app/el2/100/base/com.rnoh.tester/files/bundle.harmony.js`
-              // on your device. The path mismatch is due to app sandboxing on OpenHarmony
               new FileJSBundleProvider('/data/storage/el2/base/files/bundle.harmony.js'),
               new ResourceJSBundleProvider(this.rnohCoreContext.uiAbilityContext.resourceManager, 'hermes_bundle.hbc'),
               new ResourceJSBundleProvider(this.rnohCoreContext.uiAbilityContext.resourceManager, 'bundle.harmony.js')

@@ -21,7 +21,7 @@ import {
 import {
   Pushy,
   PushyModule,
-} from '@oh-rn/react-native-update';
+} from '@react-native-ohos/react-native-update';
 
 const PAGE_TITLE = 'React Native Update 热更新测试';
 
