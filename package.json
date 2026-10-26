@@ -1,6 +1,6 @@
 {
   "name": "@react-native-ohos/react-native-update",
-  "version": "10.56.1",
+  "version": "10.56.1-beta.1",
   "description": "react-native hot update",
   "main": "./dist/commonjs/index.js",
   "module": "./dist/module/index.js",
@@ -11,12 +11,14 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/reactnativecn/react-native-update.git"
+    "url": "https://github.com/reactnativecn/react-native-update"
   },
   "keywords": [
     "react-native",
     "harmony",
-    "harmonyos"
+    "ohos",
+    "openharmony",
+    "rnoh"
   ],
   "homepage": "https://github.com/reactnativecn/react-native-update#readme",
   "publishConfig": {
@@ -27,7 +29,9 @@
     "src/",
     "README.md",
     "LICENSE",
-    "harmony/"
+    "harmony/",
+    "CHANGELOG.md",
+    "README.md"
   ],
   "scripts": {
     "prepare": "tsc --noEmit && bob build",
