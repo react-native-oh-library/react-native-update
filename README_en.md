@@ -277,21 +277,21 @@ The TurboModule channel name is `Pushy` (consistent with the JS Spec `TurboModul
 |--------|---------|-----|-------|-------|--------|-----|-----------------|
 | getConstants | function | /  | Object   | No     | All | Yes   | Reads the native constant set (downloadRootDir/packageVersion/currentVersion, etc., 11 items in total) |
 | setLocalHashInfo | function | hash, info (JSON string)  | Promise\<void\>   | No     | All | Yes   | Writes the installation record of the specified hash. |
-| getLocalHashInfo | function | hash  | Promise\<string\> (empty string if no record)   | No     | All | Yes   | Reads the installation record of the specified hash. |
+| getLocalHashInfo | function | hash  | Promise\<string\>   | No     | All | Yes   | Reads the installation record of the specified hash. |
 | setUuid | function | uuid  | Promise\<void\>   | No     | All | Yes   | Persists the gray-release statistics uuid. |
 | syncNativeConfig | function | config (JSON string)  | Promise\<void\>   | No     | All | Yes   | Persists the native cold-start check configuration. |
 | markJsCheckCompleted | function | config (JSON string)  | Promise\<void\>   | No     | All | Yes   | Marks the JS check of the current round as completed. |
-| getNativeCheckCache | function | /  | Promise\<string\> (empty string by default)   | No     | All | Yes   | Reads the native cold-start check cache. |
+| getNativeCheckCache | function | /  | Promise\<string\>    | No     | All | Yes   | Reads the native cold-start check cache. |
 | reloadUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | Switches to the specified hash and restarts immediately. |
 | restartApp | function | /  | Promise\<void\>   | No     | All | Yes   | Restarts the application. |
 | setNeedUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | Marks the next launch to use the specified hash. |
 | markSuccess | function | /  | Promise\<void\>   | No     | All | Yes   | Marks the current version as running successfully. |
-| getBundleHash | function | /  | Promise\<string\> (empty string if unknown)   | No     | All | Yes   | Returns the sha256 of the built-in JS bundle. |
+| getBundleHash | function | /  | Promise\<string\>   | No     | All | Yes   | Returns the sha256 of the built-in JS bundle. |
 | resetToPackagedBundle | function | /  | Promise\<void\>   | No     | All | Yes   | Clears the update directory and rolls back to the built-in bundle. |
 | downloadPatchFromPpk | function | {updateUrl, hash, originHash}  | Promise\<void\>   | No     | All | Yes   | Downloads the ppk differential package and merges it. |
 | downloadPatchFromPackage | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | Generates a differential patch based on the built-in rawfile package. |
 | downloadFullUpdate | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | Downloads and decompresses a full ppk package. |
-| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | No     | Android | No   | Downloads and installs a full APK package. On HarmonyOS, the call rejects with `UNSUPPORTED_PLATFORM` (consistent with iOS behavior). |
+| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | No     | Android | No   | Downloads and installs a full APK package.  |
 | addListener | function | eventName  | void   | No     | All | Yes   | Subscribes to native events (`RCTPushyDownloadProgress` download progress). |
 | removeListeners | function | count  | void   | No     | All | Yes   | Unsubscribes from events. |
 

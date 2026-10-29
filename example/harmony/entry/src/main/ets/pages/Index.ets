@@ -8,6 +8,7 @@ import {
   AnyJSBundleProvider,
   ComponentBuilderContext,
   FileJSBundleProvider,
+  JSBundleProvider,
   MetroJSBundleProvider,
   ResourceJSBundleProvider,
   RNApp,
@@ -51,6 +52,21 @@ struct Index {
     return true
   }
 
+  private createJSBundleProvider(): JSBundleProvider {
+    const ctx = this.rnohCoreContext!;
+    const providers: JSBundleProvider[] = [];
+    if (ctx.isDebugModeEnabled) {
+      providers.push(new MetroJSBundleProvider());
+    }
+    providers.push(new PushyFileJSBundleProvider(ctx.uiAbilityContext));
+    if (ctx.isDebugModeEnabled) {
+      providers.push(new FileJSBundleProvider('/data/storage/el2/base/files/bundle.harmony.js'));
+      providers.push(new ResourceJSBundleProvider(ctx.uiAbilityContext.resourceManager, 'hermes_bundle.hbc'));
+    }
+    providers.push(new ResourceJSBundleProvider(ctx.uiAbilityContext.resourceManager, 'bundle.harmony.js'));
+    return new TraceJSBundleProviderDecorator(new AnyJSBundleProvider(providers), ctx.logger);
+  }
+
   build() {
     Column() {
       if (this.rnohCoreContext && this.shouldShow) {
@@ -71,15 +87,7 @@ struct Index {
           onSetUp: (rnInstance) => {
             rnInstance.enableFeatureFlag("ENABLE_RN_INSTANCE_CLEAN_UP")
           },
-          jsBundleProvider: new TraceJSBundleProviderDecorator(
-            new AnyJSBundleProvider([
-              new MetroJSBundleProvider(),
-              new PushyFileJSBundleProvider(this.rnohCoreContext.uiAbilityContext),
-              new FileJSBundleProvider('/data/storage/el2/base/files/bundle.harmony.js'),
-              new ResourceJSBundleProvider(this.rnohCoreContext.uiAbilityContext.resourceManager, 'hermes_bundle.hbc'),
-              new ResourceJSBundleProvider(this.rnohCoreContext.uiAbilityContext.resourceManager, 'bundle.harmony.js')
-            ]),
-            this.rnohCoreContext.logger),
+          jsBundleProvider: this.createJSBundleProvider(),
         })
       }
     }

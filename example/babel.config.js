@@ -1,10 +1,14 @@
-/*
- * Copyright (c) 2026 Huawei Device Co., Ltd. All rights reserved
- * Use of this source code is governed by a MIT license that can be
- * found in the LICENSE file.
- */
+// RN >= 0.73 ships @react-native/babel-preset; the 0.72 setup uses
+// metro-react-native-babel-preset instead. Pick whichever is installed.
+let preset;
+try {
+  preset = require.resolve('@react-native/babel-preset');
+} catch (e) {
+  preset = require.resolve('metro-react-native-babel-preset');
+}
 
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [],
+  presets: [preset],
+  plugins: [
+  ],
 };
