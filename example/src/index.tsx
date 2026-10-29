@@ -1,13 +1,22 @@
 /**
  * react-native-update（Pushy 热更新）OpenHarmony Example 测试页
  *
- * 覆盖 03-coding-library implemented_methods 的全部 19 个 TurboModule 方法：
- * 每个方法一个 Run 按钮（testID: test-{method}-btn），结果写入 Result:/Error: 区块；
- * 下载进度事件走鸿蒙 DeviceEventEmitter（RCTPushyDownloadProgress），
- * 订阅在组件卸载或手动取消时移除。
+ * 两个部分：
+ * 1.「标准接入」：PushyProvider + useUpdate 对接官方热更新服务（update.reactnative.cn）。
+ *    在“测试输入”里填入真实 appKey 后（运行时经 setOptions 生效，无需改代码），
+ *    可完整走标准链路：检查更新 →（弹窗确认/静默）下载 → 立即/下次启动切换
+ *    → markSuccess → 回退内置包/重启。
+ * 2.「TurboModule 方法」：覆盖 03-coding-library implemented_methods 的全部 19 个方法，
+ *    每个方法一个 Run 按钮（testID: test-{method}-btn），结果写入 Result:/Error: 区块；
+ *    下载进度事件走鸿蒙 DeviceEventEmitter（RCTPushyDownloadProgress）。
+ *
+ * DEV（metro）构建注意：
+ * - client.debug 已设为 true，否则 checkUpdate/switchVersion 会被 assertDebug 跳过；
+ * - markSuccess 在 DEV 下为 no-op；增量 diff/pdiff 仅对 release 产物存在，DEV 只走 full；
+ * - 完整回归（增量下载 + 自动 markSuccess）请用 release 包验证。
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   DeviceEventEmitter,
   Platform,
@@ -21,9 +30,59 @@ import {
 import {
   Pushy,
   PushyModule,
+  PushyProvider,
+  useUpdate,
+  useUpdateProgress,
+} from '@react-native-ohos/react-native-update';
+import type {
+  CheckResult,
+  ClientOptions,
 } from '@react-native-ohos/react-native-update';
 
-const PAGE_TITLE = 'React Native Update 热更新测试';
+const PAGE_TITLE = 'React Native Update 热更新测试 · OTA-A';
+
+// 默认 appKey：pushy.reactnative.cn 控制台创建的应用。也可在页面“测试输入”里
+// 运行时修改（经 setOptions 生效，无需重启）。
+const DEFAULT_APPKEY = '8sqsNreEOSy1yQL5REkf8CUx';
+// fast refresh 后本模块重新执行，客户端单例要求同 appKey 重建；把最后一次使用的
+// appKey 挂在 globalThis 上，避免输入框内容触发热刷新时抛 SINGLETON_VIOLATION。
+const APPKEY_GLOBAL_KEY = '__pushy_demo_appkey__';
+const globalStore = globalThis as unknown as Record<string, unknown>;
+const initialAppKey =
+  (globalStore[APPKEY_GLOBAL_KEY] as string) || DEFAULT_APPKEY;
+
+function createClient(): Pushy {
+  return new Pushy({
+    appKey: initialAppKey,
+    // DEV 构建下 checkUpdate/switchVersion/markSuccess 相关流程会被 assertDebug
+    // 跳过，debug 必须打开
+    debug: false,
+    // 标准接入仅提供手动检查，通过“检查更新”按钮触发。
+    checkStrategy: null,
+    // 弹窗流（发现新版本 → 确认 → 下载 → 立即/下次），面板可切静默策略
+    updateStrategy: 'alwaysAlert',
+    logger: event => {
+      console.log(`[pushy:${event.type}]`, event.data);
+    },
+  });
+}
+
+const pushyClient = createClient();
+globalStore[APPKEY_GLOBAL_KEY] = initialAppKey;
+
+const UPDATE_STRATEGIES: {
+  value: NonNullable<ClientOptions['updateStrategy']>;
+  label: string;
+}[] = [
+  { value: 'alwaysAlert', label: '弹窗提示' }
+];
+
+const CHECK_STRATEGIES: {
+  value: Exclude<ClientOptions['checkStrategy'], undefined>;
+  label: string;
+}[] = [
+  { value: null, label: '手动' },
+];
 
 interface DownloadProgressEvent {
   received: number;
@@ -36,6 +95,12 @@ interface MethodCase {
   label: string;
   testID: string;
   note?: string;
+  inputs?: {
+    key: string;
+    label: string;
+    value: string;
+    onChangeText: (value: string) => void;
+  }[];
   run: () => unknown;
 }
 
@@ -61,22 +126,233 @@ function formatValue(value: unknown): string {
   }
 }
 
-function App(): JSX.Element {
+function summarizeUpdateInfo(info: CheckResult | undefined): string {
+  if (!info) {
+    return '尚未检查';
+  }
+  if (info.upToDate) {
+    return '已是最新版本（upToDate）';
+  }
+  if (info.expired) {
+    return `安装包已过期（expired），downloadUrl: ${info.downloadUrl ?? ''}`;
+  }
+  if (info.update) {
+    return `发现新版本：${info.name ?? ''}（hash: ${info.hash ?? ''}）${
+      info.description ? `\n${info.description}` : ''
+    }`;
+  }
+  return formatValue(info);
+}
+
+/**
+ * 标准接入面板：必须在 PushyProvider 内部使用（useUpdate 依赖 UpdateContext）。
+ */
+function StandardFlowSection() {
+  const {
+    checkUpdate,
+    downloadUpdate,
+    restartApp,
+    resetToPackagedBundle,
+    dismissError,
+    updateInfo,
+    lastError,
+    packageVersion,
+    currentHash,
+    currentVersionInfo,
+  } = useUpdate();
+  const progress = useUpdateProgress();
+
+  const [actionLog, setActionLog] = useState<string[]>([]);
+  const [updateStrategy, setUpdateStrategy] =
+    useState<NonNullable<ClientOptions['updateStrategy']>>(
+      pushyClient.options.updateStrategy ?? 'alwaysAlert',
+    );
+  const [checkStrategy, setCheckStrategy] = useState<
+    Exclude<ClientOptions['checkStrategy'], undefined>
+  >(pushyClient.options.checkStrategy ?? null);
+
+  const record = useCallback((name: string, promise: Promise<unknown>) => {
+    promise
+      .then(value =>
+        setActionLog(log =>
+          [`${name} → ${formatValue(value)}`, ...log].slice(0, 6),
+        ),
+      )
+      .catch(e =>
+        setActionLog(log =>
+          [`${name} → Error: ${errMsg(e)}`, ...log].slice(0, 6),
+        ),
+      );
+  }, []);
+
+  const applyUpdateStrategy = (
+    value: NonNullable<ClientOptions['updateStrategy']>,
+  ) => {
+    pushyClient.setOptions({ updateStrategy: value });
+    setUpdateStrategy(value);
+  };
+
+  const applyCheckStrategy = (
+    value: Exclude<ClientOptions['checkStrategy'], undefined>,
+  ) => {
+    pushyClient.setOptions({ checkStrategy: value });
+    setCheckStrategy(value);
+  };
+
+  const renderPicker = <T extends string | null>(
+    items: { value: T; label: string }[],
+    current: T | undefined,
+    onPick: (value: T) => void,
+    testPrefix: string,
+  ) => (
+    <View style={styles.pickerRow} testID={`${testPrefix}-row`}>
+      {items.map(item => {
+        const active = item.value === current;
+        return (
+          <TouchableOpacity
+            key={String(item.value)}
+            testID={`${testPrefix}-${String(item.value)}`}
+            accessibilityLabel={`${testPrefix}-${String(item.value)}`}
+            style={[styles.pickerButton, active && styles.pickerButtonActive]}
+            onPress={() => onPick(item.value)}>
+            <Text
+              style={[
+                styles.pickerButtonText,
+                active && styles.pickerButtonTextActive,
+              ]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>标准接入（PushyProvider + useUpdate）</Text>
+
+      <Text style={styles.constantText}>
+        packageVersion: {packageVersion || '(empty)'}
+      </Text>
+      <Text style={styles.constantText}>
+        当前运行 hash（currentVersion）: {currentHash || '(内置包)'}
+      </Text>
+      <Text style={styles.constantText}>
+        版本信息: {formatValue(currentVersionInfo)}
+      </Text>
+
+      <Text style={styles.inputLabel}>检查更新策略（checkStrategy）</Text>
+      {renderPicker(
+        CHECK_STRATEGIES,
+        checkStrategy,
+        applyCheckStrategy,
+        'picker-checkStrategy',
+      )}
+
+      <Text style={styles.inputLabel}>更新策略（updateStrategy）</Text>
+      {renderPicker(
+        UPDATE_STRATEGIES,
+        updateStrategy,
+        applyUpdateStrategy,
+        'picker-updateStrategy',
+      )}
+
+      <Text style={styles.inputLabel}>检查结果</Text>
+      <View testID="standard-update-info" accessibilityLabel="standard-update-info">
+        <Text style={styles.statusText}>{summarizeUpdateInfo(updateInfo)}</Text>
+      </View>
+
+      {progress ? (
+        <Text style={styles.constantText} testID="standard-progress">
+          下载进度：{progress.received}/{progress.total}
+          {progress.progress !== undefined
+            ? `（${progress.progress}%）`
+            : ''}
+        </Text>
+      ) : null}
+
+      {lastError ? (
+        <View style={styles.errorBanner} testID="standard-last-error">
+          <Text style={styles.errorText}>lastError: {errMsg(lastError)}</Text>
+          <TouchableOpacity
+            testID="standard-dismiss-error-btn"
+            accessibilityLabel="standard-dismiss-error-btn"
+            onPress={dismissError}>
+            <Text style={styles.pickerButtonTextActive}>关闭</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      <View style={styles.row}>
+        <TouchableOpacity
+          testID="standard-check-btn"
+          accessibilityLabel="standard-check-btn"
+          style={styles.button}
+          onPress={() => record('checkUpdate', checkUpdate())}>
+          <Text style={styles.buttonText}>检查更新</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.row}>
+        <TouchableOpacity
+          testID="standard-restart-btn"
+          accessibilityLabel="standard-restart-btn"
+          style={styles.button}
+          onPress={() => record('restartApp', restartApp())}>
+          <Text style={styles.buttonText}>重启应用</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="standard-reset-btn"
+          accessibilityLabel="standard-reset-btn"
+          style={styles.button}
+          onPress={() =>
+            record('resetToPackagedBundle', resetToPackagedBundle())
+          }>
+          <Text style={styles.buttonText}>回退内置包</Text>
+        </TouchableOpacity>
+      </View>
+
+      {actionLog.length > 0 ? (
+        <View testID="standard-action-log" accessibilityLabel="standard-action-log">
+          {actionLog.map((line, index) => (
+            <Text key={`${line}-${index}`} style={styles.constantText}>
+              {line}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function DemoPage() {
   const [results, setResults] = useState<Record<string, string>>({});
   const [constants, setConstants] = useState<Record<string, unknown>>({});
   const [progressLog, setProgressLog] = useState<string[]>([]);
   const [listening, setListening] = useState(false);
 
-  // 测试输入（device-verify 阶段可替换为真实热更新服务地址）
-  const [updateUrl, setUpdateUrl] = useState('https://example.com/full.ppk');
-  const [hash, setHash] = useState('example-hash-001');
-  const [originHash, setOriginHash] = useState('example-hash-000');
-  const [appKey, setAppKey] = useState('example-app-key');
-
-  const pushyClientRef = useRef<Pushy | null>(null);
+  // 三种下载方式分别保留真机验证过的参数，互不覆盖。
+  const [fullDownload, setFullDownload] = useState({
+    updateUrl: 'https://dl.reactnative.cn/A',
+    hash: 'A',
+  });
+  const [ppkDownload, setPpkDownload] = useState({
+    updateUrl:
+      'https://dl.reactnative.cn/A-B.hdiff',
+    hash: 'B',
+    originHash: 'A',
+  });
+  const [packageDownload, setPackageDownload] = useState({
+    updateUrl:
+      'https://dl.reactnative.cn/C_A.phdiff',
+    hash: 'A',
+  });
+  // 安装记录与版本切换使用的 hash，由各自按钮下的输入框编辑。
+  const [hash, setHash] = useState('A');
+  const [appKey, setAppKey] = useState(initialAppKey);
 
   const nativeConfigJson = useCallback(
-    () => JSON.stringify({ appKey, endpoints: ['https://update.reactnative.cn/api'] }),
+    () => JSON.stringify({ appKey, endpoints: ['https://update.react-native.cn/api'] }),
     [appKey],
   );
 
@@ -99,11 +375,19 @@ function App(): JSX.Element {
       const value = await fn();
       setResults(prev => ({
         ...prev,
-        [slug]: `Success: ${formatValue(value)}`,
+        [slug]: `${value === null ? 'Pass' : formatValue(value)}`,
       }));
     } catch (e) {
       setResults(prev => ({ ...prev, [slug]: `Error: ${errMsg(e)}` }));
     }
+  }, []);
+
+  // appKey 输入实时同步到共享客户端：记住最后一次取值，供 fast refresh 后
+  // 以同一 appKey 重建单例；setOptions 触发原生冷启动配置重新下发。
+  const applyAppKey = useCallback((value: string) => {
+    setAppKey(value);
+    globalStore[APPKEY_GLOBAL_KEY] = value;
+    pushyClient.setOptions({ appKey: value });
   }, []);
 
   // 下载进度事件监听：鸿蒙端走 DeviceEventEmitter；卸载/取消订阅时移除（§1.7 生命周期）
@@ -129,6 +413,10 @@ function App(): JSX.Element {
     };
   }, [listening]);
 
+  const hashInputs = [
+    { key: 'hash', label: 'hash（目标版本标识）', value: hash, onChangeText: setHash },
+  ];
+
   const methods: MethodCase[] = [
     {
       slug: 'getConstants',
@@ -141,6 +429,7 @@ function App(): JSX.Element {
       slug: 'setLocalHashInfo',
       label: 'Run setLocalHashInfo',
       testID: 'test-setLocalHashInfo-btn',
+      inputs: hashInputs,
       note: `按 hash 写入安装记录：${JSON.stringify({
         name: 'Example Release',
         description: 'written by ohos example',
@@ -158,6 +447,7 @@ function App(): JSX.Element {
       slug: 'getLocalHashInfo',
       label: 'Run getLocalHashInfo',
       testID: 'test-getLocalHashInfo-btn',
+      inputs: hashInputs,
       note: '读取当前 hash 的安装记录（无记录返回空串）',
       run: () => PushyModule?.getLocalHashInfo(hash),
     },
@@ -193,12 +483,13 @@ function App(): JSX.Element {
       slug: 'reloadUpdate',
       label: 'Run reloadUpdate',
       testID: 'test-reloadUpdate-btn',
+      inputs: hashInputs,
       note: '切换到指定 hash 并立即重启应用（点击后应用会重启）',
       run: () => PushyModule?.reloadUpdate({ hash }),
     },
     {
       slug: 'restartApp',
-      label: 'Run restartApp',
+      label: 'Run restartApp(重启应用)',
       testID: 'test-restartApp-btn',
       note: '重启应用（点击后应用会重启）',
       run: () => PushyModule?.restartApp(),
@@ -207,6 +498,7 @@ function App(): JSX.Element {
       slug: 'setNeedUpdate',
       label: 'Run setNeedUpdate',
       testID: 'test-setNeedUpdate-btn',
+      inputs: hashInputs,
       note: '标记下次启动使用指定 hash（不重启）',
       run: () => PushyModule?.setNeedUpdate({ hash }),
     },
@@ -214,7 +506,7 @@ function App(): JSX.Element {
       slug: 'markSuccess',
       label: 'Run markSuccess',
       testID: 'test-markSuccess-btn',
-      note: '标记当前版本运行成功（写完成记录）',
+      note: '标记当前版本运行成功（写完成记录；DEV 下 JS 层为 no-op）',
       run: () => PushyModule?.markSuccess(),
     },
     {
@@ -226,7 +518,7 @@ function App(): JSX.Element {
     },
     {
       slug: 'resetToPackagedBundle',
-      label: 'Run resetToPackagedBundle',
+      label: 'Run resetToPackagedBundle(回退内置包)',
       testID: 'test-resetToPackagedBundle-btn',
       note: '清空更新目录并回退到内置 bundle',
       run: () => PushyModule?.resetToPackagedBundle(),
@@ -235,57 +527,59 @@ function App(): JSX.Element {
       slug: 'downloadPatchFromPpk',
       label: 'Run downloadPatchFromPpk',
       testID: 'test-downloadPatchFromPpk-btn',
-      note: '从 ppk 差分包下载合并（需真实服务端）',
+      note: '热更包差分测试：先运行全量下载得到 autotest-full-a；目标 B 用于回滚测试。',
+      inputs: [
+        {
+          key: 'updateUrl', label: 'updateUrl（热更包差分地址）', value: ppkDownload.updateUrl,
+          onChangeText: value => setPpkDownload(prev => ({ ...prev, updateUrl: value })),
+        },
+        {
+          key: 'hash', label: 'hash（目标版本标识）', value: ppkDownload.hash,
+          onChangeText: value => setPpkDownload(prev => ({ ...prev, hash: value })),
+        },
+        {
+          key: 'originHash', label: 'originHash（已下载的基准版本标识）', value: ppkDownload.originHash,
+          onChangeText: value => setPpkDownload(prev => ({ ...prev, originHash: value })),
+        },
+      ],
       run: () =>
-        PushyModule?.downloadPatchFromPpk({
-          updateUrl,
-          hash,
-          originHash,
-        }),
+        PushyModule?.downloadPatchFromPpk({ ...ppkDownload }),
     },
     {
       slug: 'downloadPatchFromPackage',
       label: 'Run downloadPatchFromPackage',
       testID: 'test-downloadPatchFromPackage-btn',
-      note: '从内置 rawfile 包生成差分（需预置资源）',
+      note: '原生包差分测试',
+      inputs: [
+        {
+          key: 'updateUrl', label: 'updateUrl（原生包差分地址）', value: packageDownload.updateUrl,
+          onChangeText: value => setPackageDownload(prev => ({ ...prev, updateUrl: value })),
+        },
+        {
+          key: 'hash', label: 'hash（目标版本标识）', value: packageDownload.hash,
+          onChangeText: value => setPackageDownload(prev => ({ ...prev, hash: value })),
+        },
+      ],
       run: () =>
-        PushyModule?.downloadPatchFromPackage({
-          updateUrl,
-          hash,
-        }),
+        PushyModule?.downloadPatchFromPackage({ ...packageDownload }),
     },
     {
       slug: 'downloadFullUpdate',
       label: 'Run downloadFullUpdate',
       testID: 'test-downloadFullUpdate-btn',
-      note: '全量 ppk 下载解压（需真实服务端）',
-      run: () => PushyModule?.downloadFullUpdate({ updateUrl, hash }),
-    },
-    {
-      slug: 'downloadAndInstallApk',
-      label: 'Run downloadAndInstallApk',
-      testID: 'test-downloadAndInstallApk-btn',
-      note: 'Android 专属能力，鸿蒙端预期 reject UNSUPPORTED_PLATFORM',
-      run: () =>
-        PushyModule?.downloadAndInstallApk({
-          url: updateUrl,
-          target: 'apk',
-          hash,
-        }),
-    },
-    {
-      slug: 'jsCheckUpdate',
-      label: 'Run jsCheckUpdate',
-      testID: 'test-jsCheckUpdate-btn',
-      note: 'JS 层全链路：创建 Pushy 客户端并检查更新（默认服务器）',
-      run: async () => {
-        if (!pushyClientRef.current) {
-          pushyClientRef.current = new Pushy({ appKey });
-        }
-        const result = await pushyClientRef.current.checkUpdate();
-        return result ?? 'undefined (check skipped)';
-      },
-    },
+      note: '全量下载测试-全量ppk下载解压（需真实服务端）',
+      inputs: [
+        {
+          key: 'updateUrl', label: 'updateUrl（全量包地址）', value: fullDownload.updateUrl,
+          onChangeText: value => setFullDownload(prev => ({ ...prev, updateUrl: value })),
+        },
+        {
+          key: 'hash', label: 'hash（目标版本标识）', value: fullDownload.hash,
+          onChangeText: value => setFullDownload(prev => ({ ...prev, hash: value })),
+        },
+      ],
+      run: () => PushyModule?.downloadFullUpdate({ ...fullDownload }),
+    }
   ];
 
   const renderResult = (slug: string) => {
@@ -333,6 +627,8 @@ function App(): JSX.Element {
         </Text>
       </View>
 
+      <StandardFlowSection />
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>getConstants 常量面板</Text>
         <View testID="constants-box" accessibilityLabel="constants-box">
@@ -346,41 +642,14 @@ function App(): JSX.Element {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>测试输入</Text>
-        <Text style={styles.inputLabel}>updateUrl</Text>
-        <TextInput
-          testID="input-updateUrl"
-          style={styles.input}
-          value={updateUrl}
-          onChangeText={setUpdateUrl}
-          autoCapitalize="none"
-          placeholder="热更新服务地址"
-        />
-        <Text style={styles.inputLabel}>hash</Text>
-        <TextInput
-          testID="input-hash"
-          style={styles.input}
-          value={hash}
-          onChangeText={setHash}
-          autoCapitalize="none"
-          placeholder="目标版本 hash"
-        />
-        <Text style={styles.inputLabel}>originHash（ppk 差分基准）</Text>
-        <TextInput
-          testID="input-originHash"
-          style={styles.input}
-          value={originHash}
-          onChangeText={setOriginHash}
-          autoCapitalize="none"
-          placeholder="当前已装版本 hash"
-        />
-        <Text style={styles.inputLabel}>appKey（JS 层检查更新用）</Text>
+        <Text style={styles.inputLabel}>appKey（标准接入用，输入后实时生效）</Text>
         <TextInput
           testID="input-appKey"
           style={styles.input}
           value={appKey}
-          onChangeText={setAppKey}
+          onChangeText={applyAppKey}
           autoCapitalize="none"
-          placeholder="热更新服务 appKey"
+          placeholder="pushy.reactnative.cn 控制台的 appKey"
         />
       </View>
 
@@ -444,6 +713,20 @@ function App(): JSX.Element {
               onPress={() => runMethod(method.slug, method.run)}>
               <Text style={styles.buttonText}>{method.label}</Text>
             </TouchableOpacity>
+            {method.inputs?.map(input => (
+              <View key={input.key}>
+                <Text style={styles.inputLabel}>{input.label}</Text>
+                <TextInput
+                  testID={`input-${method.slug}-${input.key}`}
+                  accessibilityLabel={`input-${method.slug}-${input.key}`}
+                  style={styles.input}
+                  value={input.value}
+                  onChangeText={input.onChangeText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            ))}
             {method.note ? (
               <Text style={styles.noteText}>{method.note}</Text>
             ) : null}
@@ -452,6 +735,14 @@ function App(): JSX.Element {
         ))}
       </View>
     </ScrollView>
+  );
+}
+
+function App() {
+  return (
+    <PushyProvider client={pushyClient}>
+      <DemoPage />
+    </PushyProvider>
   );
 }
 
@@ -495,7 +786,9 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+    marginTop: 8,
   },
   button: {
     backgroundColor: '#2f6fed',
@@ -515,6 +808,46 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
+  pickerButton: {
+    backgroundColor: '#eef3fe',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#ccd9f7',
+  },
+  pickerButtonActive: {
+    backgroundColor: '#2f6fed',
+    borderColor: '#2f6fed',
+  },
+  pickerButtonText: {
+    color: '#2f6fed',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  pickerButtonTextActive: {
+    color: '#ffffff',
+  },
+  statusText: {
+    fontSize: 13,
+    color: '#1c1e21',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#fdecea',
   },
   inputLabel: {
     fontSize: 12,

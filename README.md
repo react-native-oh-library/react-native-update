@@ -272,21 +272,21 @@ TurboModule 通道名 `Pushy`（与 JS Spec `TurboModuleRegistry.get('Pushy')` �
 |--------|---------|-----|-------|-------|--------|-----|-----------------|
 | getConstants | function | /  | Object   | No     | All | Yes   | 读取原生常量集（downloadRootDir/packageVersion/currentVersion 等 11 项） |
 | setLocalHashInfo | function | hash, info（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 写入指定 hash 的安装记录。 |
-| getLocalHashInfo | function | hash  | Promise\<string\>（无记录返回空串）   | No     | All | Yes   | 读取指定 hash 的安装记录。 |
+| getLocalHashInfo | function | hash  | Promise\<string\>   | No     | All | Yes   | 读取指定 hash 的安装记录。 |
 | setUuid | function | uuid  | Promise\<void\>   | No     | All | Yes   | 持久化灰度统计 uuid。 |
 | syncNativeConfig | function | config（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 持久化原生冷启动检查配置。 |
 | markJsCheckCompleted | function | config（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 标记本轮 JS 检查已完成。 |
-| getNativeCheckCache | function | /  | Promise\<string\>（缺省空串）   | No     | All | Yes   | 读取原生冷启动检查缓存。 |
+| getNativeCheckCache | function | /  | Promise\<string\>   | No     | All | Yes   | 读取原生冷启动检查缓存。 |
 | reloadUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | 切换到指定 hash 并立即重启。 |
 | restartApp | function | /  | Promise\<void\>   | No     | All | Yes   | 重启应用。 |
 | setNeedUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | 标记下次启动使用指定 hash。 |
 | markSuccess | function | /  | Promise\<void\>   | No     | All | Yes   | 标记当前版本运行成功。 |
-| getBundleHash | function | /  | Promise\<string\>（未知返回空串）   | No     | All | Yes   | 内置 JS bundle 的 sha256。 |
+| getBundleHash | function | /  | Promise\<string\>   | No     | All | Yes   | 内置 JS bundle 的 sha256。 |
 | resetToPackagedBundle | function | /  | Promise\<void\>   | No     | All | Yes   | 清空更新目录并回退内置 bundle。 |
 | downloadPatchFromPpk | function | {updateUrl, hash, originHash}  | Promise\<void\>   | No     | All | Yes   | 下载 ppk 差分包并合并。 |
 | downloadPatchFromPackage | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | 基于内置 rawfile 包生成差分。 |
 | downloadFullUpdate | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | 全量 ppk 下载解压。 |
-| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | No     | Android | No   | 下载并安装 APK 整包。鸿蒙端调用将 reject `UNSUPPORTED_PLATFORM`（与 iOS 行为一致）。 |
+| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | No     | Android | No   | 下载并安装 APK 整包。 |
 | addListener | function | eventName  | void   | No     | All | Yes   | 订阅原生事件（`RCTPushyDownloadProgress` 下载进度）。 |
 | removeListeners | function | count  | void   | No     | All | Yes   | 取消事件订阅。 |
 
