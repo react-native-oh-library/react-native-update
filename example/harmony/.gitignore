@@ -14,6 +14,7 @@ rnoh_modules
 **/build
 /.hvigor
 .cxx
+/entry/src/main/resources/rawfile/meta.json
 /.clangd
 /.clang-format
 /.clang-tidy

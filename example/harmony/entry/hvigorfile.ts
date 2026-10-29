@@ -6,10 +6,12 @@
 
 import { hapTasks } from '@ohos/hvigor-ohos-plugin';
 import { createRNOHModulePlugin } from '@rnoh/hvigor-plugin';
+import { pushyBuildPlugin } from '../pushy-build-plugin';
 
 export default {
   system: hapTasks,
   plugins: [
+    pushyBuildPlugin(),
     createRNOHModulePlugin({
       nodeModulesPath: '../node_modules',
       codegen: null,

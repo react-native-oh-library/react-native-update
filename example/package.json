@@ -11,7 +11,11 @@
     "install:pkg": "npm uninstall @react-native-ohos/react-native-update && npm run pack:pkg && npm i @react-native-ohos/react-native-update@file:../react-native-ohos-react-native-update-10.56.1-beta.1.tgz",
     "dev": "npm run codegen && react-native bundle-harmony --dev --minify=false",
     "prod": "npm run codegen && react-native bundle-harmony --dev=false --minify=true",
-    "postinstall": "node ./scripts/create-build-profile",
+    "pushy": "node scripts/pushy-cli.cjs",
+    "pushy:flow": "node scripts/pushy-flow.cjs",
+    "test:pushy-flow": "node --test scripts/pushy-flow/core.test.cjs",
+    "test:build-metadata": "node --test scripts/pushy-build-metadata.test.js",
+    "postinstall": "node ./scripts/create-build-profile && node ./scripts/sync-hvigor-plugin",
     "fast:pkg": "cd ../ && npm i --legacy-peer-deps && npm pack && cd ./example && npm i && npm run dev"
   },
   "dependencies": {

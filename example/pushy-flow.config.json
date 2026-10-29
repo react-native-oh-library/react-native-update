@@ -1,0 +1,16 @@
+{
+  "runId": "release-flow-002",
+  "cliVersion": "2.29.3",
+  "appId": 34211,
+  "device": "4ZB0225428016254",
+  "bundleName": "com.harmony.update.demo",
+  "ability": "EntryAbility",
+  "product": "default",
+  "devecoHome": "F:/Program Files/Huawei/DevEco Studio",
+  "hdc": "hdc",
+  "appOutput": "harmony/build/outputs/default/harmony-default-unsigned.app",
+  "hapOutput": "harmony/entry/build/default/outputs/default/entry-default-signed.hap",
+  "serverTimeoutMs": 120000,
+  "downloadTimeoutMs": 180000,
+  "env": {}
+}
