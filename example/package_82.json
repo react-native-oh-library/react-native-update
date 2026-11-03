@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "fast-install-project": "cd ../ && npm i --legacy-peer-deps && npm pack && cd ./example && npm i --legacy-peer-deps",
-    "fast:pkg": "npm run fast-install-project && npm run dev",
-    "start": "hdc rport tcp:8081 tcp:8081 && react-native start",
+    "i": "cd ../ && npm i && npm pack && cd ./example && npm i",
     "reStart": "npm run install:pkg && npm run codegen && hdc rport tcp:8081 tcp:8081 && react-native start",
+    "start": "hdc rport tcp:8081 tcp:8081 && react-native start",
+    "codegen": "react-native codegen-harmony --rnoh-module-path ./harmony/entry/oh_modules/@rnoh/react-native-openharmony",
     "pack:pkg": "cd ../ && npm pack && cd ./example",
     "install:pkg": "npm uninstall @react-native-ohos/react-native-update && npm run pack:pkg && npm i @react-native-ohos/react-native-update@file:../react-native-ohos-react-native-update-10.56.1-beta.1.tgz",
     "dev": "npm run codegen && react-native bundle-harmony --dev --minify=false",
+    "prod": "npm run codegen && react-native bundle-harmony --dev=false --minify=true",
+    "pushy": "node scripts/pushy-cli.cjs",
+    "pushy:flow": "node scripts/pushy-flow.cjs",
+    "test:pushy-flow": "node --test scripts/pushy-flow/core.test.cjs",
+    "test:build-metadata": "node --test scripts/pushy-build-metadata.test.js",
     "postinstall": "node ./scripts/create-build-profile && node ./scripts/sync-hvigor-plugin",
-    "codegen": "react-native codegen-harmony --rnoh-module-path ./harmony/entry/oh_modules/@rnoh/react-native-openharmony"
+    "fast:pkg": "cd ../ && npm i --legacy-peer-deps && npm pack && cd ./example && npm i && npm run dev"
   },
   "dependencies": {
     "@react-native-ohos/react-native-update": "file:../react-native-ohos-react-native-update-10.56.1-beta.1.tgz",
