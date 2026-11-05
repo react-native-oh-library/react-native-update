@@ -75,5 +75,4 @@ BuildProfile.ets
 package-lock.json
 
 # Pushy local credentials and generated bundles
-.update
 .pushy/

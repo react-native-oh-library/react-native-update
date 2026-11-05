@@ -10,7 +10,7 @@ The version mapping is as follows:
 
 | Library Name | Library Version (npm) | Release Info | Supported RN Version | Autolink | Compilation API Version | Community Baseline Version | Source Code |
 | ------------ | ------------ | ------------------------------ | ------------- | ------------- |------------------------ | ------------- | ------------- | 
-| @react-native-ohos/react-native-update | [10.56.1](https://www.npmjs.com/package/@react-native-ohos/react-native-update)    | [GitHub Releases](https://github.com/react-native-oh-library/react-native-update/releases) | 0.72.\*/0.77.\*/0.82.\*/0.84.\* | Yes | API12+ | 10.56.1 | [master](https://github.com/react-native-oh-library/react-native-update/tree/master) |
+| @react-native-ohos/react-native-update | [10.56.1 (in development)](https://www.npmjs.com/package/@react-native-ohos/react-native-update)    | [GitHub Releases](https://github.com/react-native-oh-library/react-native-update/releases) | 0.72.\*/0.77.\*/0.82.\*/0.84.\* | Yes | API12+ | 10.56.1 | [master](https://github.com/react-native-oh-library/react-native-update/tree/master) |
 
 ## Introduction
 
@@ -45,41 +45,43 @@ yarn add @react-native-ohos/react-native-update
 
 Projects using AutoLink need to be configured according to this document. Autolinking framework guide: https://gitcode.com/CPF-RN/ohos_react_native/blob/master/docs/zh-cn/Autolinking.md
 
-If the version you are using supports Autolink and your project has integrated Autolink, you can skip the ManualLink configuration.
+Projects using Autolink need to be configured according to this document, Autolink framework guide: https://atomgit.com/CPF-RN/ohos_react_native/blob/main/docs/en/02-development/02-development-guide/autolinking.md .
+
+If the version you are using supports Autolink and the project has integrated Autolink, you can skip the ManualLink configuration.
 
 <details>
-  <summary>ManualLink: Guide for manually configuring native dependencies</summary>
+  <summary>ManualLink: This step provides guidance for manually configuring native dependencies.</summary>
 
-First, open the `harmony` HarmonyOS project of your project in DevEco Studio.
+Open the `harmony` directory of the OpenHarmony project in DevEco Studio.
 
 ### 1. Overrides RN SDK
 
-To make the project depend on the same version of the RN SDK, you need to add the `overrides` field in the `oh-package.json5` in the project root directory, pointing to the RN SDK version that the project needs to use. The substituted version can be a specific version number, a fuzzy version, or a local HAR package or source directory.
+To ensure the project relies on the same version of the RN SDK, you need to add an `overrides` field in the project's root `oh-package.json5` file, specifying the RN SDK version to be used. The replacement version can be a specific version number, a semver range, or a locally available HAR package or source directory.
 
-For the role of this field, please read the [official documentation](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-oh-package-json5-V5#zh-cn_topic_0000001792256137_overrides)
+For more information about the purpose of this field, please refer to the [official documentation](https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/ide-oh-package-json5-V5#en-us_topic_0000001792256137_overrides).
 
 ```json
 {
   "overrides": {
-    "@rnoh/react-native-openharmony": "file:../node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har" // online ohpm version
-    // "@rnoh/react-native-openharmony" : "./react_native_openharmony.har" // path to a local har package
+    "@rnoh/react-native-openharmony": "file:../node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har" // path to a local har package
+    // "@rnoh/react-native-openharmony" : "~0.84.2" // online ohpm version
     // "@rnoh/react-native-openharmony" : "./react_native_openharmony" // path to source code
   }
 }
 ```
 
-### 2. Add the Native Code
+### 2. Introducing Native Code
 
-There are currently two methods:
+Currently, two methods are available:
 
-- Import via a har package;
-- Link the source code directly.
+- Use the HAR file.
+- Directly link to the source code.
 
-Method 1: Import via a har package (recommended)
+Method 1 (recommended): Use the HAR file.
 
-> [!TIP] The har package is located in the `harmony` folder of the third-party library installation path.
+> [!TIP] The HAR file is stored in the `harmony` directory in the installation path of the third-party library.
 
-Open `entry/oh-package.json5` and add the following dependency
+Open `entry/oh-package.json5` file and add the following dependencies:
 
 ```json
 "dependencies": {
@@ -87,18 +89,18 @@ Open `entry/oh-package.json5` and add the following dependency
 }
 ```
 
-Click the `sync` button in the upper right corner
+Click the `sync` button in the upper right corner.
 
-Or run in the command-line terminal:
+Alternatively, run the following instruction on the terminal:
 
 ```bash
 cd entry
 ohpm install
 ```
 
-Method 2: Link the source code directly
+Method 2: Directly link to the source code.
 
-> [!TIP] To link the source code directly, please refer to the [link-source-code instructions](https://gitcode.com/CPF-RN/usage-docs/blob/master/zh-cn/link-source-code.md)
+> [!TIP] For details, see [Directly Linking Source Code](https://atomgit.com/CPF-RN/usage-docs/blob/master/en/link-source-code.md).
 
 ### 3. Configure CMakeLists and Import UpdatePackage
 
@@ -227,9 +229,9 @@ requestPermissions: [
 ],
 ```
 
-## Usage Example
+## Example
 
-The following code demonstrates the basic usage scenario of this library:
+The following code shows the basic use scenario of the repository:
 
 > [!WARNING] The library name in the import statement remains unchanged (still the installed package name `@react-native-ohos/react-native-update`).
 
@@ -264,11 +266,11 @@ function UpdateBanner() {
 }
 ```
 
-## API Description
+## Available APIs
 
-> [!TIP] The "Platform" column indicates the platforms supported by the property in the original third-party library.
+> [!TIP] The **Platform** column indicates the platform where the properties are supported in the original third-party library.
 
-> [!TIP] "yes" in the "OpenHarmony Support" column means the property is supported on the OpenHarmony platform; "no" means not supported; "partially" means partially supported. The usage is consistent across platforms, and the effect is benchmarked against iOS or Android.
+> [!TIP] If the value of **OpenHarmony Platform Support** is **Yes**, it means that the OpenHarmony platform supports this property; **No** means the opposite; **Partially** means some capabilities of this property are supported. The usage method is the same on different platforms and the effect is the same as that of iOS or Android.
 
 The TurboModule channel name is `Pushy` (consistent with the JS Spec `TurboModuleRegistry.get('Pushy')`), and all 19 native methods have been implemented on the HarmonyOS side.
 

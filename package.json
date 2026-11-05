@@ -11,7 +11,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/reactnativecn/react-native-update"
+    "url": "https://github.com/react-native-oh-library/react-native-update"
   },
   "keywords": [
     "react-native",
@@ -20,7 +20,10 @@
     "openharmony",
     "rnoh"
   ],
-  "homepage": "https://github.com/reactnativecn/react-native-update#readme",
+  "homepage": "https://github.com/react-native-oh-library/react-native-update#readme",
+  "bugs": {
+    "url": "https://github.com/react-native-oh-library/react-native-update/issues"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
