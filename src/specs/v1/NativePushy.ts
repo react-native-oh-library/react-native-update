@@ -18,9 +18,8 @@ export interface Spec extends TurboModule {
     currentVersionInfo: string;
     supportedDiffVersion: number;
     /**
-     * SHA-256 of the running hot-update bundle as recorded by the install
-     * (cpp/patch_core/install_record.h); '' for the embedded bundle, legacy
-     * installs, or older native modules.
+     * 安装记录（cpp/patch_core/install_record.h）中保存的当前运行热更新包的 SHA-256。
+     * 使用内置包、旧版安装记录或旧版原生模块时为空字符串。
      */
     currentBundleSha256?: string;
   };
@@ -47,24 +46,27 @@ export interface Spec extends TurboModule {
    */
   setUuid(uuid: string): Promise<void>;
   /**
-   * Persist the config subset the native cold-start update check consumes
-   * (appKey, endpoints, afterDownload policy; NATIVE_CHECKUPDATE_DESIGN
-   * §10.1). Stored as a raw JSON string, parsed natively on read. JS is the
-   * single config source — a native side without persisted config silently
-   * skips its check, which doubles as the feature's rollout gate.
+   * 持久化原生冷启动更新检查所需的配置子集，包括 appKey、服务端地址和 afterDownload 策略
+   * （参见 NATIVE_CHECKUPDATE_DESIGN §10.1）。配置以原始 JSON 字符串存储，读取时由原生侧解析。
+   * JS 是唯一的配置来源；原生侧未持久化配置时会静默跳过检查，此行为也用于控制该功能的启用范围。
+   *
+   * @param config - 原生冷启动更新检查所需配置的 JSON 字符串。
+   * @returns 配置持久化完成时兑现的 Promise。
    */
   syncNativeConfig(config: string): Promise<void>;
   /**
-   * Raw response cached by the native cold-start check, including the request
-   * and config fingerprints that scope reuse (§10.3). Resolves to
-   * an empty string when absent; never rejects.
+   * 读取原生冷启动更新检查缓存的原始响应，包括用于限定复用范围的请求和配置指纹（参见 §10.3）。
+   *
+   * @returns 缓存的原始响应字符串；无缓存时返回空字符串，Promise 不会被拒绝。
    */
   getNativeCheckCache(): Promise<string>;
   /**
-   * JS obtained a valid check response in this process for `config` (the
-   * same JSON syncNativeConfig persists). The delayed cold-start round skips
-   * its own request when its persisted config matches; a crash-rescue round
-   * is unaffected (§10.3). Older native modules lack this method.
+   * 标记 JS 已在当前进程中获取指定配置的有效更新检查响应。
+   * 若持久化配置匹配，延迟执行的冷启动检查会跳过自身请求；崩溃救援检查不受影响（参见 §10.3）。
+   * 旧版原生模块不提供此方法。
+   *
+   * @param config - 本次 JS 检查使用的配置 JSON 字符串，与 syncNativeConfig 持久化的格式相同。
+   * @returns 完成标记处理后兑现的 Promise。
    */
   markJsCheckCompleted(config: string): Promise<void>;
   /**
@@ -94,9 +96,10 @@ export interface Spec extends TurboModule {
    */
   markSuccess(): Promise<void>;
   /**
-   * sha256 of the JS bundle embedded in the binary (the pdiff source), lazily
-   * computed and cached natively. Resolves to an empty string when unknown
-   * (debug build, no embedded bundle, hash failure) — never rejects.
+   * 获取安装包内置 JS 包（pdiff 差分源）的 SHA-256，由原生侧按需计算并缓存。
+   *
+   * @returns 内置 JS 包的 SHA-256；无法获取时（调试构建、无内置包或计算失败）返回空字符串，
+   * Promise 不会被拒绝。
    */
   getBundleHash(): Promise<string>;
   /**

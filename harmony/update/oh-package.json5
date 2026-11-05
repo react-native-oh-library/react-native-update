@@ -3,9 +3,9 @@
   "devDependencies": {
 
   },
-  "author": "",
+  "author": "react-native-oh-library",
   "name": "@react-native-ohos/react-native-update",
-  "description": "Please describe the basic information.",
+  "description": "OpenHarmony support for React Native Pushy hot updates, including full and differential JS bundle updates and rollback.",
   "main": "index.ets",
   "version": "10.56.1-beta.1",
   "dependencies": {
