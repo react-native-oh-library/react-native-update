@@ -38,26 +38,26 @@ yarn add @react-native-ohos/react-native-update
 |--------------------------------------|----------------|-----------|
 | 10.56.1                              | Yes            |  0.72/0.77/0.82/0.84     |
 
-使用AutoLink的工程需要根据该文档配置，Autolink框架指导文档：https://gitcode.com/CPF-RN/ohos_react_native/blob/master/docs/zh-cn/Autolinking.md
+使用 Autolink 的工程需要根据该文档配置，Autolink 框架指导文档：https://atomgit.com/CPF-RN/ohos_react_native/blob/main/docs/zh-cn/02-开发/02-开发指南/Autolinking.md 。
 
-如您使用的版本支持 Autolink，并且工程已接入 Autolink，可跳过ManualLink配置。
+如您使用的版本支持 Autolink，并且工程已接入 Autolink，可跳过 ManualLink 配置。
 
 <details>
   <summary>ManualLink: 此步骤为手动配置原生依赖项的指导</summary>
 
-首先需要使用 DevEco Studio 打开项目里的 HarmonyOS 工程 `harmony`。
+首先需要使用 DevEco Studio 打开项目里的 OpenHarmony 工程 `harmony`。
 
 ### 1. Overrides RN SDK
 
 为了让工程依赖同一个版本的 RN SDK，需要在工程根目录的 `oh-package.json5` 添加 overrides 字段，指向工程需要使用的 RN SDK 版本。替换的版本既可以是一个具体的版本号，也可以是一个模糊版本，还可以是本地存在的 HAR 包或源码目录。
 
-关于该字段的作用请阅读[官方说明](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-oh-package-json5-V5#zh-cn_topic_0000001792256137_overrides)
+关于该字段的作用请阅读[官方说明](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-oh-package-json5-V5#zh-cn_topic_0000001792256137_overrides)。
 
 ```json
 {
   "overrides": {
-    "@rnoh/react-native-openharmony": "file:../node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har" // ohpm 在线版本
-    // "@rnoh/react-native-openharmony" : "./react_native_openharmony.har" // 指向本地 har 包的路径
+    "@rnoh/react-native-openharmony": "file:../node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har" // 指向本地 har 包的路径
+    // "@rnoh/react-native-openharmony" : "~0.84.2" // ohpm 在线版本
     // "@rnoh/react-native-openharmony" : "./react_native_openharmony" // 指向源码路径
   }
 }
@@ -67,14 +67,14 @@ yarn add @react-native-ohos/react-native-update
 
 目前有两种方法：
 
-- 通过 har 包引入；
+- 通过 har 包引入。
 - 直接链接源码。
 
 方法一：通过 har 包引入（推荐）
 
 > [!TIP] har 包位于三方库安装路径的 `harmony` 文件夹下。
 
-打开 `entry/oh-package.json5`，添加以下依赖
+打开 `entry/oh-package.json5`，添加以下依赖：
 
 ```json
 "dependencies": {
@@ -261,34 +261,34 @@ function UpdateBanner() {
 
 ## 接口说明
 
-> [!TIP] "Platform"列表示该属性在原三方库上支持的平台。
+> [!TIP] "平台"列表示该属性在原三方库上支持的平台。
 
-> [!TIP] "OpenHarmony Support"列为 yes 表示 OpenHarmony平台支持 该属性；no 则表示不支持；partially 表示部分支持。使用方法跨平台一致，效果对标 iOS 或 Android 的效果。
+> [!TIP] "OpenHarmony平台支持"列为 "是" 表示 OpenHarmony 平台支持该属性；"否" 则表示不支持；"部分支持" 表示仅实现了功能的一部分。使用方法跨平台一致，效果对标 iOS 或 Android 的效果。
 
 TurboModule 通道名 `Pushy`（与 JS Spec `TurboModuleRegistry.get('Pushy')` 一致），原生端全部 19 个方法均已在鸿蒙侧实现。
 
 ### API
 | 名称     | 类型     | 参数类型 | 返回值 | 必填    | 平台 | OpenHarmony平台支持 | 描述  |
 |--------|---------|-----|-------|-------|--------|-----|-----------------|
-| getConstants | function | /  | Object   | No     | All | Yes   | 读取原生常量集（downloadRootDir/packageVersion/currentVersion 等 11 项） |
-| setLocalHashInfo | function | hash, info（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 写入指定 hash 的安装记录。 |
-| getLocalHashInfo | function | hash  | Promise\<string\>   | No     | All | Yes   | 读取指定 hash 的安装记录。 |
-| setUuid | function | uuid  | Promise\<void\>   | No     | All | Yes   | 持久化灰度统计 uuid。 |
-| syncNativeConfig | function | config（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 持久化原生冷启动检查配置。 |
-| markJsCheckCompleted | function | config（JSON 字符串）  | Promise\<void\>   | No     | All | Yes   | 标记本轮 JS 检查已完成。 |
-| getNativeCheckCache | function | /  | Promise\<string\>   | No     | All | Yes   | 读取原生冷启动检查缓存。 |
-| reloadUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | 切换到指定 hash 并立即重启。 |
-| restartApp | function | /  | Promise\<void\>   | No     | All | Yes   | 重启应用。 |
-| setNeedUpdate | function | {hash}  | Promise\<void\>   | No     | All | Yes   | 标记下次启动使用指定 hash。 |
-| markSuccess | function | /  | Promise\<void\>   | No     | All | Yes   | 标记当前版本运行成功。 |
-| getBundleHash | function | /  | Promise\<string\>   | No     | All | Yes   | 内置 JS bundle 的 sha256。 |
-| resetToPackagedBundle | function | /  | Promise\<void\>   | No     | All | Yes   | 清空更新目录并回退内置 bundle。 |
-| downloadPatchFromPpk | function | {updateUrl, hash, originHash}  | Promise\<void\>   | No     | All | Yes   | 下载 ppk 差分包并合并。 |
-| downloadPatchFromPackage | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | 基于内置 rawfile 包生成差分。 |
-| downloadFullUpdate | function | {updateUrl, hash}  | Promise\<void\>   | No     | All | Yes   | 全量 ppk 下载解压。 |
-| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | No     | Android | No   | 下载并安装 APK 整包。 |
-| addListener | function | eventName  | void   | No     | All | Yes   | 订阅原生事件（`RCTPushyDownloadProgress` 下载进度）。 |
-| removeListeners | function | count  | void   | No     | All | Yes   | 取消事件订阅。 |
+| getConstants | function | /  | Object   | 否     | All | 是   | 读取原生常量集（downloadRootDir/packageVersion/currentVersion 等 11 项） |
+| setLocalHashInfo | function | hash, info（JSON 字符串）  | Promise\<void\>   | 否     | All | 是   | 写入指定 hash 的安装记录。 |
+| getLocalHashInfo | function | hash  | Promise\<string\>   | 否     | All | 是   | 读取指定 hash 的安装记录。 |
+| setUuid | function | uuid  | Promise\<void\>   | 否     | All | 是   | 持久化灰度统计 uuid。 |
+| syncNativeConfig | function | config（JSON 字符串）  | Promise\<void\>   | 否     | All | 是   | 持久化原生冷启动检查配置。 |
+| markJsCheckCompleted | function | config（JSON 字符串）  | Promise\<void\>   | 否     | All | 是   | 标记本轮 JS 检查已完成。 |
+| getNativeCheckCache | function | /  | Promise\<string\>   | 否     | All | 是   | 读取原生冷启动检查缓存。 |
+| reloadUpdate | function | {hash}  | Promise\<void\>   | 否     | All | 是   | 切换到指定 hash 并立即重启。 |
+| restartApp | function | /  | Promise\<void\>   | 否     | All | 是   | 重启应用。 |
+| setNeedUpdate | function | {hash}  | Promise\<void\>   | 否     | All | 是   | 标记下次启动使用指定 hash。 |
+| markSuccess | function | /  | Promise\<void\>   | 否     | All | 是   | 标记当前版本运行成功。 |
+| getBundleHash | function | /  | Promise\<string\>   | 否     | All | 是   | 内置 JS bundle 的 sha256。 |
+| resetToPackagedBundle | function | /  | Promise\<void\>   | 否     | All | 是   | 清空更新目录并回退内置 bundle。 |
+| downloadPatchFromPpk | function | {updateUrl, hash, originHash}  | Promise\<void\>   | 否     | All | 是   | 下载 ppk 差分包并合并。 |
+| downloadPatchFromPackage | function | {updateUrl, hash}  | Promise\<void\>   | 否     | All | 是   | 基于内置 rawfile 包生成差分。 |
+| downloadFullUpdate | function | {updateUrl, hash}  | Promise\<void\>   | 否     | All | 是   | 全量 ppk 下载解压。 |
+| downloadAndInstallApk | function | {url, target, hash}  | Promise\<void\>   | 否     | Android | 否   | 下载并安装 APK 整包。 |
+| addListener | function | eventName  | void   | 否     | All | 是   | 订阅原生事件（`RCTPushyDownloadProgress` 下载进度）。 |
+| removeListeners | function | count  | void   | 否     | All | 是   | 取消事件订阅。 |
 
 ## 遗留问题
 
