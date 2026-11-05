@@ -15,6 +15,11 @@
 ## 简介
 
 react-native-update 是 [热更新服务 Pushy](https://pushy.reactnative.cn/) 的官方客户端库，为 React Native 应用提供 JS bundle 热更新能力。<br/>
+本库为其 OpenHarmony（鸿蒙）适配版本，主要能力包括：
+
+- 全量 ppk 更新：下载、解压、切换和回滚；
+- 差分 pdiff 更新：使用 HDiffPatch + LZMA 合并补丁，与 Android 侧共用同一套 C++ 实现；
+- 版本管理与灰度发布：支持 markSuccess 成功标记、hash 安装记录、灰度发布 uuid、原生冷启动检查缓存等。
 
 ## 下载安装
 
@@ -210,7 +215,7 @@ ohpm install
 
 ### 权限要求
 
-- 热更新包通过网络 url 下载，应用需要申请网络权限（normal 级，免用户授权），由宿主 App 在 entry 模块声明（HAR 自身不声明）
+- 热更新包通过网络 url 下载，应用需要申请网络权限（normal 级，免用户授权），由宿主 App 在 entry 模块声明。
 
   在`entry/src/main/module.json5`中添加
 

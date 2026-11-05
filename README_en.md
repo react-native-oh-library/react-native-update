@@ -43,8 +43,6 @@ yarn add @react-native-ohos/react-native-update
 |--------------------------------------|----------------|-----------|
 | 10.56.1                              | Yes            |  0.72/0.77/0.82/0.84     |
 
-Projects using AutoLink need to be configured according to this document. Autolinking framework guide: https://gitcode.com/CPF-RN/ohos_react_native/blob/master/docs/zh-cn/Autolinking.md
-
 Projects using Autolink need to be configured according to this document, Autolink framework guide: https://atomgit.com/CPF-RN/ohos_react_native/blob/main/docs/en/02-development/02-development-guide/autolinking.md .
 
 If the version you are using supports Autolink and the project has integrated Autolink, you can skip the ManualLink configuration.
@@ -217,7 +215,7 @@ The content of this document has been verified with the following versions:
 
 ### Permission Requirements
 
-- Hot-update packages are downloaded via network urls, so the application needs to apply for the network permission (normal level, no user authorization required). It is declared by the host application in the entry module (the HAR itself does not declare it)
+- Hot-update packages are downloaded via network urls, so the application needs to apply for the network permission (normal level, no user authorization required). It is declared by the host application in the entry module.
 
   Add the following to `entry/src/main/module.json5`:
 
